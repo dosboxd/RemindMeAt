@@ -27,14 +27,15 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
 
-    func notify(near targetLocation: CLLocationCoordinate2D, onEntry: Bool, onExit: Bool) {
+    func notify(near targetLocation: CLLocationCoordinate2D, onEntry: Bool, onExit: Bool, radius: Double = 100.0) {
+        print("Adding notification")
         let content = UNMutableNotificationContent()
         content.title = "At home"
         content.subtitle = "Reminding you!"
         content.sound = UNNotificationSound.default
 
         let region = CLCircularRegion(
-            center: targetLocation, radius: 100, identifier: UUID().uuidString)
+            center: targetLocation, radius: radius, identifier: UUID().uuidString)
         let trigger = UNLocationNotificationTrigger(region: region, repeats: false)
         region.notifyOnEntry = onEntry
         region.notifyOnExit = onExit
