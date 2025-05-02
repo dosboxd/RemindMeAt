@@ -2,6 +2,8 @@ import MapKit
 
 final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
+    @Published var pendingNotifications: [UNNotificationRequest] = []
+    @Published var isThereAnyPendingNotificationsLeft: Bool = false
     private let notificationCenter: UNUserNotificationCenter
 
     init(notificationCenter: UNUserNotificationCenter) {
@@ -9,11 +11,19 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         super.init()
 
         self.notificationCenter.delegate = self
-        NotificationCenter.default.addObserver(
-            forName: UIApplication.willTerminateNotification, object: nil, queue: .main
-        ) { _ in
-            self.clearPendingNotifications()
+        Task { @MainActor in
+            let data = await notificationCenter.pendingNotificationRequests()
+            pendingNotifications = data
+            isThereAnyPendingNotificationsLeft = !data.isEmpty
         }
+    }
+
+    func replace(newPendingNotifications: [UNNotificationRequest]) {
+        let set1 = Set(newPendingNotifications)
+        let set2 = Set(pendingNotifications)
+        let diff = set1.symmetricDifference(set2)
+        let identifiers = Array(diff).map { $0.identifier }
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)
     }
 
     func requestAuthorization() async {
@@ -44,12 +54,6 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
             identifier: UUID().uuidString, content: content, trigger: trigger)
 
         notificationCenter.add(request)
-    }
-
-    func clearPendingNotifications() {
-        print("clearPendingNotifications")
-        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
     func userNotificationCenter(

@@ -29,7 +29,7 @@ struct ContentView: View {
                         .strokeStyle(style: StrokeStyle(lineWidth: 1, lineCap: .butt, lineJoin: .miter, miterLimit: 10, dash: [], dashPhase: 0))
                 }
             }
-            .mapControls {
+           .mapControls {
                 MapUserLocationButton()
             }
             .onTapGesture { position in
@@ -58,6 +58,18 @@ struct ContentView: View {
                     .presentationDetents([.height(200)])
                 }
             )
+            .sheet(isPresented: $notifyService.isThereAnyPendingNotificationsLeft) {
+                List {
+                    ForEach($notifyService.pendingNotifications) { notification in
+                        Text("\(notification)")
+                    }
+                    .onDelete { index in
+                        var copy = notifyService.pendingNotifications
+                        copy.remove(atOffsets: index)
+                        notifyService.replace(newPendingNotifications: copy)
+                    }
+                }
+            }
             .onChange(of: tappedCoordinate) { oldValue, newValue in
                 // present a sheet
                 print(tappedCoordinate)
@@ -69,4 +81,8 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+}
+
+extension UNNotificationRequest: @retroactive Identifiable {
+    public var id: String { identifier }
 }
