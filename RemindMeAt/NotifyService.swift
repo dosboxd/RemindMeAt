@@ -1,9 +1,10 @@
+import CoreLocation
 import MapKit
 
 final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
     @Published var pendingNotifications: [UNNotificationRequest] = []
-    @Published var isThereAnyPendingNotificationsLeft: Bool = false
+    @Published var areThereAnyPendingNotificationsLeft: Bool = false
     private let notificationCenter: UNUserNotificationCenter
 
     init(notificationCenter: UNUserNotificationCenter) {
@@ -14,7 +15,7 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         Task { @MainActor in
             let data = await notificationCenter.pendingNotificationRequests()
             pendingNotifications = data
-            isThereAnyPendingNotificationsLeft = !data.isEmpty
+            areThereAnyPendingNotificationsLeft = !data.isEmpty
         }
     }
 
@@ -24,6 +25,9 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         let diff = set1.symmetricDifference(set2)
         let identifiers = Array(diff).map { $0.identifier }
         notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)
+        Task { @MainActor in
+            areThereAnyPendingNotificationsLeft = await !notificationCenter.pendingNotificationRequests().isEmpty
+        }
     }
 
     func requestAuthorization() async {
@@ -37,11 +41,13 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         }
     }
 
-    func notify(near targetLocation: CLLocationCoordinate2D, onEntry: Bool, onExit: Bool, radius: Double = 100.0) {
+    func notify(
+        near targetLocation: CLLocationCoordinate2D, about text: String, onEntry: Bool,
+        onExit: Bool, radius: Double = 100.0
+    ) {
         print("Adding notification")
         let content = UNMutableNotificationContent()
-        content.title = "At home"
-        content.subtitle = "Reminding you!"
+        content.title = text
         content.sound = UNNotificationSound.default
 
         let region = CLCircularRegion(
@@ -68,4 +74,8 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         print("Attempt to present notification")
         return [.banner, .sound, .badge, .list]
     }
+}
+
+extension UNNotificationRequest: @retroactive Identifiable {
+    public var id: String { identifier }
 }
