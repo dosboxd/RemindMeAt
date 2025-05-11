@@ -10,8 +10,10 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
     init(notificationCenter: UNUserNotificationCenter) {
         self.notificationCenter = notificationCenter
         super.init()
-
         self.notificationCenter.delegate = self
+    }
+
+    func loadPendingNotifications() {
         Task { @MainActor in
             let data = await notificationCenter.pendingNotificationRequests()
             pendingNotifications = data

@@ -49,6 +49,7 @@ struct ContentView: View {
             .task {
                 locationService.requestAuthorization()
                 await notifyService.requestAuthorization()
+                notifyService.loadPendingNotifications()
             }
             .sheet(isPresented: $isPresented, onDismiss: { tappedCoordinate = nil }) {
                 creationBottomSheet
@@ -83,6 +84,7 @@ struct ContentView: View {
         let fittingRect = rects.reduce(MKMapRect.null) { $0.union($1) }
         position = MapCameraPosition.region(MKCoordinateRegion(fittingRect))
         tappedCoordinate = nil
+        notifyService.loadPendingNotifications()
     }
 
     var creationBottomSheet: some View {
