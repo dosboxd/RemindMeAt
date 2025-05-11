@@ -129,6 +129,7 @@ struct ContentView: View {
                 var copy = notifyService.pendingNotifications
                 copy.remove(atOffsets: index)
                 notifyService.replace(newPendingNotifications: copy)
+                notifyService.pendingNotifications.remove(atOffsets: index)
             }
         }
         .presentationBackgroundInteraction(.enabled)
