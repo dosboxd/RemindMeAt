@@ -23,21 +23,13 @@ struct ContentView: View {
             Map(position: $position) {
                 UserAnnotation()
                 if let tappedCoordinate {
-                    Annotation.init("RemindMeAt", coordinate: tappedCoordinate.coordinate) {
-                        Image(systemName: "mappin.circle")
-                            .resizable()
-                            .scaledToFit()
-                            .font(.footnote)
-                            .frame(width: 32, height: 32)
-                            .foregroundColor(.white)
-                    }
-                    mapCircle(center: tappedCoordinate.coordinate, radius: radius * 100)
+                    mapCircle(name: "RemindMeAt", center: tappedCoordinate.coordinate, radius: radius * 100)
                 }
                 ForEach(notifyService.pendingNotifications) { notification in
                     if let region = (notification.trigger as? UNLocationNotificationTrigger)?.region
                         as? CLCircularRegion
                     {
-                        mapCircle(center: region.center, radius: region.radius)
+                        mapCircle(name: notification.content.title, center: region.center, radius: region.radius)
                     }
                 }
             }
@@ -137,10 +129,13 @@ struct ContentView: View {
         .interactiveDismissDisabled()
     }
 
-    func mapCircle(center: CLLocationCoordinate2D, radius: CLLocationDistance) -> some MapContent {
-        MapCircle(center: center, radius: radius)
-            .foregroundStyle(Color.blue.opacity(0.2))
-            .stroke(.white, lineWidth: 2)
+    func mapCircle(name: String, center: CLLocationCoordinate2D, radius: CLLocationDistance) -> some MapContent {
+        Group {
+            Marker(coordinate: center) { Text(name) }
+            MapCircle(center: center, radius: radius)
+                .foregroundStyle(Color.blue.opacity(0.2))
+                .stroke(.white, lineWidth: 2)
+        }
     }
 }
 
