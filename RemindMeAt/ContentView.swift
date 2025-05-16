@@ -8,9 +8,8 @@ struct ContentView: View {
     @StateObject private var notifyService = NotifyService(notificationCenter: .current())
 
     @State private var position: MapCameraPosition = .automatic
-    @State private var mapItems = [MKMapItem]()
-    @State private var listDetent = PresentationDetent.medium
-    @State private var detailsDetent = PresentationDetent.medium
+    @State private var listDetent = PresentationDetent.fraction(0.33)
+    @State private var detailsDetent = PresentationDetent.fraction(0.33)
 
     @State var selection: NotificationEntity?
     @State var isPresentedCreateView: Bool = false
@@ -43,6 +42,7 @@ struct ContentView: View {
                     let mkMapCamera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0)
                     let mapCamera = MapCamera(mkMapCamera)
                     self.position = .camera(mapCamera)
+                    listDetent = .fraction(0.33)
                 }
             }
             .task {
@@ -63,9 +63,11 @@ struct ContentView: View {
                                     set: { self.selection = $0 }
                                 )
                             )
+                            .presentationDragIndicator(.visible)
                             .presentationBackgroundInteraction(.enabled)
-                            .presentationDetents([.fraction(0.33)], selection: $detailsDetent)
+                            .presentationDetents([.large, .fraction(0.33)], selection: $detailsDetent)
                             .environmentObject(notifyService)
+                            .environmentObject(locationService)
                         }
                     }
             }
@@ -76,7 +78,7 @@ struct ContentView: View {
         List {
             Section("Notifications") {
                 ForEach(notifyService.pendingNotifications) { notification in
-                    Text(notification.identifier)
+                    Text(notification.content.title)
                 }
                 .onDelete { index in
                     var copy = notifyService.pendingNotifications

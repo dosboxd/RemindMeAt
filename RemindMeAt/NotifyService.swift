@@ -47,7 +47,7 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         near targetLocation: CLLocationCoordinate2D, about text: String, onEntry: Bool,
         onExit: Bool, radius: Double = 100.0
     ) {
-        print("Adding notification")
+        print("Adding notification \(text)")
         let content = UNMutableNotificationContent()
         content.title = text
         content.sound = UNNotificationSound.default

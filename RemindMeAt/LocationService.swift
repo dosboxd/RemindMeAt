@@ -43,4 +43,18 @@ final class LocationService: NSObject, CLLocationManagerDelegate, ObservableObje
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         print("didFailWithError")
     }
+
+    func lookUpPlacemark(location coordinates: CLLocationCoordinate2D) async throws -> [String] {
+        let geocoder = CLGeocoder()
+        let placemarks = try await geocoder.reverseGeocodeLocation(
+            CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude),
+            preferredLocale: .current)
+        return placemarks.compactMap { $0.name }
+    }
+}
+
+extension CLLocationCoordinate2D: @retroactive Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
 }
