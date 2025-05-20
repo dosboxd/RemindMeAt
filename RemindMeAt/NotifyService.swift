@@ -4,7 +4,6 @@ import MapKit
 final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
     @Published var pendingNotifications: [UNNotificationRequest] = []
-    @Published var areThereAnyPendingNotificationsLeft: Bool = false
     private let notificationCenter: UNUserNotificationCenter
 
     init(notificationCenter: UNUserNotificationCenter) {
@@ -17,7 +16,6 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         Task { @MainActor in
             let data = await notificationCenter.pendingNotificationRequests()
             pendingNotifications = data
-            areThereAnyPendingNotificationsLeft = !data.isEmpty
         }
     }
 
@@ -27,9 +25,6 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         let diff = set1.symmetricDifference(set2)
         let identifiers = Array(diff).map { $0.identifier }
         notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)
-        Task { @MainActor in
-            areThereAnyPendingNotificationsLeft = await !notificationCenter.pendingNotificationRequests().isEmpty
-        }
     }
 
     func requestAuthorization() async {

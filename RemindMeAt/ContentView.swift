@@ -7,7 +7,9 @@ struct ContentView: View {
     @StateObject private var locationService = LocationService()
     @StateObject private var notifyService = NotifyService(notificationCenter: .current())
 
-    @State private var position: MapCameraPosition = .automatic
+    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var isPresentedListView: Bool = true
+
     @State private var listDetent = PresentationDetent.fraction(0.33)
     @State private var detailsDetent = PresentationDetent.fraction(0.33)
 
@@ -50,11 +52,14 @@ struct ContentView: View {
                 await notifyService.requestAuthorization()
                 notifyService.loadPendingNotifications()
             }
-            .sheet(isPresented: $notifyService.areThereAnyPendingNotificationsLeft) {
+            .sheet(isPresented: $isPresentedListView) {
                 listBottomSheet
-                    .sheet(isPresented: $isPresentedCreateView, onDismiss: {
-                        position = .automatic
-                    }) {
+                    .sheet(
+                        isPresented: $isPresentedCreateView,
+                        onDismiss: {
+                            selection = nil
+                        }
+                    ) {
                         if let selection = selection {
                             CreateNotificationView(
                                 isPresented: $isPresentedCreateView,
@@ -65,7 +70,9 @@ struct ContentView: View {
                             )
                             .presentationDragIndicator(.visible)
                             .presentationBackgroundInteraction(.enabled)
-                            .presentationDetents([.large, .fraction(0.33)], selection: $detailsDetent)
+                            .presentationDetents(
+                                [.large, .fraction(0.33)], selection: $detailsDetent
+                            )
                             .environmentObject(notifyService)
                             .environmentObject(locationService)
                         }
@@ -77,19 +84,23 @@ struct ContentView: View {
     var listBottomSheet: some View {
         List {
             Section("Notifications") {
-                ForEach(notifyService.pendingNotifications) { notification in
-                    Text(notification.content.title)
+                if notifyService.pendingNotifications.isEmpty {
+                    Text("Tap on map to add a reminder")
+                } else {
+                    ForEach(notifyService.pendingNotifications) { notification in
+                        Text(notification.content.title)
+                    }
+                    .onDelete { index in
+                        var copy = notifyService.pendingNotifications
+                        copy.remove(atOffsets: index)
+                        notifyService.replace(newPendingNotifications: copy)
+                        notifyService.pendingNotifications.remove(atOffsets: index)
+                    }
                 }
-                .onDelete { index in
-                    var copy = notifyService.pendingNotifications
-                    copy.remove(atOffsets: index)
-                    notifyService.replace(newPendingNotifications: copy)
-                    notifyService.pendingNotifications.remove(atOffsets: index)
-                }
-                .listRowBackground(Color.clear)
             }
             .headerProminence(.increased)
         }
+        .listRowBackground(Color.clear)
         .listStyle(.plain)
         .background(.ultraThickMaterial)
         .presentationBackgroundInteraction(.enabled)
