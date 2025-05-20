@@ -3,7 +3,7 @@ import MapKit
 
 final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
 
-    @Published var pendingNotifications: [UNNotificationRequest] = []
+    @Published var pendingNotifications: [NotificationEntity] = []
     private let notificationCenter: UNUserNotificationCenter
 
     init(notificationCenter: UNUserNotificationCenter) {
@@ -14,16 +14,25 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
 
     func loadPendingNotifications() {
         Task { @MainActor in
-            let data = await notificationCenter.pendingNotificationRequests()
-            pendingNotifications = data
+            self.pendingNotifications = await notificationCenter.pendingNotificationRequests()
+                .compactMap { request in
+                    guard let trigger = request.trigger as? UNLocationNotificationTrigger,
+                        let region = trigger.region as? CLCircularRegion
+                    else { return nil }
+
+                    return NotificationEntity(
+                        id: request.id, title: request.content.title, center: region.center,
+                        notifyOnEntry: region.notifyOnEntry, notifyOnExit: region.notifyOnExit,
+                        radius: region.radius)
+                }
         }
     }
 
-    func replace(newPendingNotifications: [UNNotificationRequest]) {
+    func replace(newPendingNotifications: [NotificationEntity]) {
         let set1 = Set(newPendingNotifications)
         let set2 = Set(pendingNotifications)
         let diff = set1.symmetricDifference(set2)
-        let identifiers = Array(diff).map { $0.identifier }
+        let identifiers = Array(diff).map { $0.id }
         notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)
     }
 

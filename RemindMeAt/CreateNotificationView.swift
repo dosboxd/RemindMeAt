@@ -80,6 +80,6 @@ struct CreateNotificationView: View {
 
 #Preview {
     @Previewable @State var notification = NotificationEntity(
-        title: "", center: .init(), notifyOnEntry: true, notifyOnExit: false, radius: 100)
+        id: "", title: "", center: .init(), notifyOnEntry: true, notifyOnExit: false, radius: 100)
     CreateNotificationView(isPresented: .constant(true), notification: $notification)
 }

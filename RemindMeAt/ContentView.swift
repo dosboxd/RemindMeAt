@@ -27,11 +27,7 @@ struct ContentView: View {
                         .stroke(.white, lineWidth: 2)
                 }
                 ForEach(notifyService.pendingNotifications) { notification in
-                    if let region = (notification.trigger as? UNLocationNotificationTrigger)?.region
-                        as? CLCircularRegion
-                    {
-                        mapCircle(name: notification.content.title, center: region.center, radius: region.radius)
-                    }
+                    mapCircle(name: notification.title, center: notification.center, radius: notification.radius)
                 }
             }
             .mapControls {
@@ -40,7 +36,7 @@ struct ContentView: View {
             .onTapGesture { position in
                 if let coordinate = proxy.convert(position, from: .local) {
                     isPresentedCreateView = true
-                    selection = NotificationEntity(title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
+                    selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
                     let mkMapCamera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0)
                     let mapCamera = MapCamera(mkMapCamera)
                     self.position = .camera(mapCamera)
@@ -88,7 +84,11 @@ struct ContentView: View {
                     Text("Tap on map to add a reminder")
                 } else {
                     ForEach(notifyService.pendingNotifications) { notification in
-                        Text(notification.content.title)
+                        Button(notification.title) {
+                            selection = notification
+                            isPresentedCreateView = true
+                            position = .item(MKMapItem(placemark: MKPlacemark(coordinate: notification.center)))
+                        }
                     }
                     .onDelete { index in
                         var copy = notifyService.pendingNotifications
