@@ -37,7 +37,7 @@ struct ContentView: View {
                     selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
                     let mkMapCamera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0)
                     let mapCamera = MapCamera(mkMapCamera)
-                    self.position = .camera(mapCamera)
+                    withAnimation { self.position = .camera(mapCamera) }
                     listDetent = .fraction(0.33)
                 }
             }
@@ -50,7 +50,7 @@ struct ContentView: View {
                 listBottomSheet
                     .sheet(
                         item: $selection,
-                        onDismiss: { position = .automatic }
+                        onDismiss: { withAnimation { self.position = .automatic } }
                     ) { selection in
                         CreateNotificationView(
                             notification: Binding(
@@ -79,7 +79,7 @@ struct ContentView: View {
                     ForEach(notifyService.pendingNotifications) { notification in
                         Button(notification.title) {
                             selection = notification
-                            position = .item(MKMapItem(placemark: MKPlacemark(coordinate: notification.center)))
+                            withAnimation { position = .item(MKMapItem(placemark: MKPlacemark(coordinate: notification.center))) }
                         }
                     }
                     .onDelete { index in
