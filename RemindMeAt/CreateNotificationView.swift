@@ -2,10 +2,11 @@ import SwiftUI
 
 struct CreateNotificationView: View {
 
+    @Environment(\.dismiss) var dismiss
+
     @EnvironmentObject var notifyService: NotifyService
     @EnvironmentObject var locationService: LocationService
 
-    @Binding var isPresented: Bool
     @Binding var notification: NotificationEntity
 
     @State private var shouldSelectOnEntryOrOnExitBehavior = false
@@ -74,12 +75,12 @@ struct CreateNotificationView: View {
             onEntry: notification.notifyOnEntry,
             onExit: notification.notifyOnExit, radius: notification.radius)
         notifyService.loadPendingNotifications()
-        isPresented = false
+        dismiss()
     }
 }
 
 #Preview {
     @Previewable @State var notification = NotificationEntity(
         id: "", title: "", center: .init(), notifyOnEntry: true, notifyOnExit: false, radius: 100)
-    CreateNotificationView(isPresented: .constant(true), notification: $notification)
+    CreateNotificationView(notification: $notification)
 }

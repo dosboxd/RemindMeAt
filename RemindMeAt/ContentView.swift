@@ -14,7 +14,6 @@ struct ContentView: View {
     @State private var detailsDetent = PresentationDetent.fraction(0.33)
 
     @State var selection: NotificationEntity?
-    @State var isPresentedCreateView: Bool = false
 
     var body: some View {
         MapReader { proxy in
@@ -35,7 +34,6 @@ struct ContentView: View {
             }
             .onTapGesture { position in
                 if let coordinate = proxy.convert(position, from: .local) {
-                    isPresentedCreateView = true
                     selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
                     let mkMapCamera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0)
                     let mapCamera = MapCamera(mkMapCamera)
@@ -51,27 +49,22 @@ struct ContentView: View {
             .sheet(isPresented: $isPresentedListView) {
                 listBottomSheet
                     .sheet(
-                        isPresented: $isPresentedCreateView,
-                        onDismiss: {
-                            selection = nil
-                        }
-                    ) {
-                        if let selection = selection {
-                            CreateNotificationView(
-                                isPresented: $isPresentedCreateView,
-                                notification: Binding(
-                                    get: { selection },
-                                    set: { self.selection = $0 }
-                                )
+                        item: $selection,
+                        onDismiss: { position = .automatic }
+                    ) { selection in
+                        CreateNotificationView(
+                            notification: Binding(
+                                get: { selection },
+                                set: { self.selection = $0 }
                             )
-                            .presentationDragIndicator(.visible)
-                            .presentationBackgroundInteraction(.enabled)
-                            .presentationDetents(
-                                [.large, .fraction(0.33)], selection: $detailsDetent
-                            )
-                            .environmentObject(notifyService)
-                            .environmentObject(locationService)
-                        }
+                        )
+                        .presentationDragIndicator(.visible)
+                        .presentationBackgroundInteraction(.enabled)
+                        .presentationDetents(
+                            [.large, .fraction(0.33)], selection: $detailsDetent
+                        )
+                        .environmentObject(notifyService)
+                        .environmentObject(locationService)
                     }
             }
         }
@@ -86,7 +79,6 @@ struct ContentView: View {
                     ForEach(notifyService.pendingNotifications) { notification in
                         Button(notification.title) {
                             selection = notification
-                            isPresentedCreateView = true
                             position = .item(MKMapItem(placemark: MKPlacemark(coordinate: notification.center)))
                         }
                     }
