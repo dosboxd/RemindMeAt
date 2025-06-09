@@ -15,27 +15,27 @@ struct CreateNotificationView: View {
     var body: some View {
         Form {
             Section("Details") {
-                HStack {
-                    Text("Name: ")
-                    TextField("Reminder name", text: $notification.title)
-                        .focused($reminderFieldIsFocused)
-                        .onSubmit {
-                            saveAndRemind(notification)
-                        }
-                        .padding(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(.secondary, lineWidth: 1)
-                        )
-                }
-                VStack(alignment: .leading) {
-                    Text("Radius: \(Int(notification.radius)) meters")
                     HStack {
-                        Text("5 m.")
-                        Slider(value: $notification.radius, in: 5...100, step: 1)
-                        Text("100 m.")
+                        Text("Name: ")
+                        TextField("Reminder name", text: $notification.title)
+                            .focused($reminderFieldIsFocused)
+                            .onSubmit {
+                                saveAndRemind(notification)
+                            }
+                            .padding(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(.secondary, lineWidth: 1)
+                            )
                     }
-                }
+                    VStack(alignment: .leading) {
+                        Text("Radius: \(Int(notification.radius)) meters")
+                        HStack {
+                            Text("5 m.")
+                            Slider(value: $notification.radius, in: 5...100, step: 1)
+                            Text("100 m.")
+                        }
+                    }
             }
             Section("Notify on") {
                 Toggle(isOn: $notification.notifyOnEntry) {
@@ -47,6 +47,11 @@ struct CreateNotificationView: View {
             }
             Button("Save and remind") {
                 saveAndRemind(notification)
+            }
+            Button(role: .destructive) {
+                dismiss.callAsFunction()
+            } label: {
+                Text("Cancel")
             }
             .listRowSeparator(.hidden)
         }
@@ -82,5 +87,7 @@ struct CreateNotificationView: View {
 #Preview {
     @Previewable @State var notification = NotificationEntity(
         id: "", title: "", center: .init(), notifyOnEntry: true, notifyOnExit: false, radius: 100)
-    CreateNotificationView(notification: $notification)
+        CreateNotificationView(notification: $notification)
+            .environmentObject(NotifyService(notificationCenter: .current()))
+            .environmentObject(LocationService())
 }
