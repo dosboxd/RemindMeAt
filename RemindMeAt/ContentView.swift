@@ -32,14 +32,13 @@ struct ContentView: View {
             .mapControls {
                 MapUserLocationButton()
             }
-            .onTapGesture { position in
-                if let coordinate = proxy.convert(position, from: .local) {
-                    selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
-                    let mkMapCamera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0)
-                    let mapCamera = MapCamera(mkMapCamera)
-                    withAnimation { self.position = .camera(mapCamera) }
-                    listDetent = .fraction(0.33)
+            .gesture(
+                LongPressGestureWithPosition { position in
+                    locate(position: position, proxy: proxy, space: .global)
                 }
+            )
+            .onTapGesture { position in
+                locate(position: position, proxy: proxy, space: .local)
             }
             .task {
                 locationService.requestAuthorization()
@@ -107,6 +106,13 @@ struct ContentView: View {
                 .foregroundStyle(Color.blue.opacity(0.2))
                 .stroke(.white, lineWidth: 2)
         }
+    }
+
+    func locate(position: CGPoint, proxy: MapProxy, space: CoordinateSpaceProtocol) {
+        guard let coordinate = proxy.convert(position, from: space) else { return }
+        selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
+        withAnimation { self.position = .camera(MapCamera(MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0))) }
+        listDetent = .fraction(0.33)
     }
 }
 
