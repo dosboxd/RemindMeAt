@@ -7,12 +7,12 @@ struct LongPressGestureWithPosition: UIGestureRecognizerRepresentable {
         self.longPressAt = longPressAt
     }
 
-    func makeUIGestureRecognizer(context: Context) -> UILongPressGestureRecognizer {
+    func makeUIGestureRecognizer(context _: Context) -> UILongPressGestureRecognizer {
         UILongPressGestureRecognizer()
     }
 
-    func handleUIGestureRecognizerAction(_ gesture: UILongPressGestureRecognizer, context: Context) {
-        guard  gesture.state == .began else { return }
+    func handleUIGestureRecognizerAction(_ gesture: UILongPressGestureRecognizer, context _: Context) {
+        guard gesture.state == .began else { return }
         longPressAt(gesture.location(in: gesture.view))
     }
 }

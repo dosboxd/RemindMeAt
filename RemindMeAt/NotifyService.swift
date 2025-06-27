@@ -2,7 +2,6 @@ import CoreLocation
 import MapKit
 
 final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
-
     @Published var pendingNotifications: [NotificationEntity] = []
     private let notificationCenter: UNUserNotificationCenter
 
@@ -17,13 +16,14 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
             self.pendingNotifications = await notificationCenter.pendingNotificationRequests()
                 .compactMap { request in
                     guard let trigger = request.trigger as? UNLocationNotificationTrigger,
-                        let region = trigger.region as? CLCircularRegion
+                          let region = trigger.region as? CLCircularRegion
                     else { return nil }
 
                     return NotificationEntity(
                         id: request.id, title: request.content.title, center: region.center,
                         notifyOnEntry: region.notifyOnEntry, notifyOnExit: region.notifyOnExit,
-                        radius: region.radius)
+                        radius: region.radius
+                    )
                 }
         }
     }
@@ -57,25 +57,27 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         content.sound = UNNotificationSound.default
 
         let region = CLCircularRegion(
-            center: targetLocation, radius: radius, identifier: UUID().uuidString)
+            center: targetLocation, radius: radius, identifier: UUID().uuidString
+        )
         let trigger = UNLocationNotificationTrigger(region: region, repeats: false)
         region.notifyOnEntry = onEntry
         region.notifyOnExit = onExit
 
         let request = UNNotificationRequest(
-            identifier: UUID().uuidString, content: content, trigger: trigger)
+            identifier: UUID().uuidString, content: content, trigger: trigger
+        )
 
         notificationCenter.add(request)
     }
 
     func userNotificationCenter(
-        _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
+        _: UNUserNotificationCenter, didReceive _: UNNotificationResponse
     ) async {
         print("Received Notification")
     }
 
     func userNotificationCenter(
-        _ center: UNUserNotificationCenter, willPresent notification: UNNotification
+        _: UNUserNotificationCenter, willPresent _: UNNotification
     ) async -> UNNotificationPresentationOptions {
         print("Attempt to present notification")
         return [.banner, .sound, .badge, .list]

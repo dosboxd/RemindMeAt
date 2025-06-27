@@ -8,4 +8,3 @@ struct Location: Identifiable, Equatable {
         lhs.id == rhs.id
     }
 }
-

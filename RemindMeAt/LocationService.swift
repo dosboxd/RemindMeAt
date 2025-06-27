@@ -1,7 +1,6 @@
 import MapKit
 
 final class LocationService: NSObject, CLLocationManagerDelegate, ObservableObject {
-
     private let locationManager = CLLocationManager()
 
     override init() {
@@ -36,11 +35,12 @@ final class LocationService: NSObject, CLLocationManagerDelegate, ObservableObje
             print("unknown default")
         }
     }
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+
+    func locationManager(_: CLLocationManager, didUpdateLocations _: [CLLocation]) {
         print("didUpdateLocations")
     }
 
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+    func locationManager(_: CLLocationManager, didFailWithError _: any Error) {
         print("didFailWithError")
     }
 
@@ -48,7 +48,8 @@ final class LocationService: NSObject, CLLocationManagerDelegate, ObservableObje
         let geocoder = CLGeocoder()
         let placemarks = try await geocoder.reverseGeocodeLocation(
             CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude),
-            preferredLocale: .current)
+            preferredLocale: .current
+        )
         return placemarks.compactMap { $0.name }
     }
 }

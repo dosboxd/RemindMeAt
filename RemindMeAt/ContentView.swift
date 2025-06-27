@@ -3,7 +3,6 @@ import SwiftUI
 import UserNotifications
 
 struct ContentView: View {
-
     @StateObject private var locationService = LocationService()
     @StateObject private var notifyService = NotifyService(notificationCenter: .current())
 
