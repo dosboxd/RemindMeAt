@@ -9,6 +9,8 @@ struct ContentView: View {
     @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     @State private var isPresentedListView: Bool = true
 
+    @AppStorage("satelliteEnabled", store: .standard) private var satelliteEnabled: Bool = false
+
     @State private var listDetent = PresentationDetent.fraction(0.33)
     @State private var detailsDetent = PresentationDetent.fraction(0.33)
 
@@ -16,20 +18,32 @@ struct ContentView: View {
 
     var body: some View {
         MapReader { proxy in
-            Map(position: $position) {
-                UserAnnotation()
-                if let selection = Binding($selection) {
-                    Marker(coordinate: selection.center.wrappedValue) { Text(selection.title.wrappedValue) }
-                    MapCircle(center: selection.center.wrappedValue, radius: selection.radius.wrappedValue)
-                        .foregroundStyle(Color.blue.opacity(0.2))
-                        .stroke(.white, lineWidth: 2)
+            ZStack {
+                Map(position: $position) {
+                    UserAnnotation()
+                    if let selection = Binding($selection) {
+                        Marker(coordinate: selection.center.wrappedValue) { Text(selection.title.wrappedValue) }
+                        MapCircle(center: selection.center.wrappedValue, radius: selection.radius.wrappedValue)
+                            .foregroundStyle(Color.blue.opacity(0.2))
+                            .stroke(.white, lineWidth: 2)
+                    }
+                    ForEach(notifyService.pendingNotifications) { notification in
+                        mapCircle(name: notification.title, center: notification.center, radius: notification.radius)
+                    }
                 }
-                ForEach(notifyService.pendingNotifications) { notification in
-                    mapCircle(name: notification.title, center: notification.center, radius: notification.radius)
+                VStack {
+                    HStack {
+                        Spacer()
+                        mapControls
+                    }
+                    .padding(5)
+
+                    Spacer()
                 }
+                .mapStyle(satelliteEnabled ? .hybrid : .standard)
             }
             .mapControls {
-                MapUserLocationButton()
+                MapScaleView()
             }
             .gesture(
                 LongPressGestureWithPosition { position in
@@ -112,6 +126,35 @@ struct ContentView: View {
         selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
         withAnimation { self.position = .camera(MapCamera(MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0))) }
         listDetent = .fraction(0.33)
+    }
+
+    var mapControls: some View {
+        VStack {
+            Button {
+                position = .userLocation(fallback: .automatic)
+            } label: {
+                Rectangle()
+                    .foregroundStyle(.background)
+                    .cornerRadius(8)
+                    .overlay(
+                        Image(systemName: position == .userLocation(fallback: .automatic) ? "location.fill" : "location")
+                    )
+            }
+            .frame(width: 44, height: 44)
+            Button {
+                withAnimation {
+                    satelliteEnabled.toggle()
+                }
+            } label: {
+                Rectangle()
+                    .foregroundStyle(.background)
+                    .cornerRadius(8)
+                    .overlay(
+                        Image(systemName: satelliteEnabled ? "globe.americas.fill" : "globe.americas")
+                    )
+            }
+            .frame(width: 44, height: 44)
+        }
     }
 }
 
