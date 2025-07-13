@@ -31,6 +31,7 @@ struct ContentView: View {
                         mapCircle(name: notification.title, center: notification.center, radius: notification.radius)
                     }
                 }
+                .mapStyle(satelliteEnabled ? .hybrid : .standard)
                 VStack {
                     HStack {
                         Spacer()
@@ -40,7 +41,6 @@ struct ContentView: View {
 
                     Spacer()
                 }
-                .mapStyle(satelliteEnabled ? .hybrid : .standard)
             }
             .mapControls {
                 MapScaleView()
