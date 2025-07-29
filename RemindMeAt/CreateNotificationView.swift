@@ -57,9 +57,6 @@ struct CreateNotificationView: View {
         .selectionDisabled()
         .listStyle(.automatic)
         .backgroundStyle(.ultraThickMaterial)
-        .onAppear {
-            reminderFieldIsFocused = true
-        }
         .task(id: notification.center) {
             do {
                 notification.title =
