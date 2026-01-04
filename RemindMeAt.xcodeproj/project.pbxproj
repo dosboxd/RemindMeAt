@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7C164297D9DF9054B8C531CD /* Detent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25C8830A8A702BA924C8727 /* Detent.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		63BCC8072DB7987500B41A56 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -21,10 +25,11 @@
 
 /* Begin PBXFileReference section */
 		63BCC7E72DB789DA00B41A56 /* RemindMeAt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RemindMeAt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E25C8830A8A702BA924C8727 /* Detent.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = Detent.swift; path = Detent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		63BCC7F62DB797A800B41A56 /* Exceptions for "RemindMeAt" folder in "RemindMeAt" target */ = {
+		63BCC7F62DB797A800B41A56 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -37,7 +42,7 @@
 		63BCC7E92DB789DA00B41A56 /* RemindMeAt */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				63BCC7F62DB797A800B41A56 /* Exceptions for "RemindMeAt" folder in "RemindMeAt" target */,
+				63BCC7F62DB797A800B41A56 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = RemindMeAt;
 			sourceTree = "<group>";
@@ -60,6 +65,7 @@
 			children = (
 				63BCC7E92DB789DA00B41A56 /* RemindMeAt */,
 				63BCC7E82DB789DA00B41A56 /* Products */,
+				D4114DD331E95640324C3C43 /* RemindMeAt */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +75,15 @@
 				63BCC7E72DB789DA00B41A56 /* RemindMeAt.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D4114DD331E95640324C3C43 /* RemindMeAt */ = {
+			isa = PBXGroup;
+			children = (
+				E25C8830A8A702BA924C8727 /* Detent.swift */,
+			);
+			name = RemindMeAt;
+			path = RemindMeAt;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -146,6 +161,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C164297D9DF9054B8C531CD /* Detent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

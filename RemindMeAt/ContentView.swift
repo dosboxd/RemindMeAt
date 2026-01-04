@@ -60,7 +60,7 @@ struct ContentView: View {
                 if newValue {
                     position = .automatic
                     previousPosition = position
-                    listDetent = .height(100)
+                    listDetent = Detent.small.presentationDetent
                     selection = nil
                 }
             }
@@ -76,7 +76,7 @@ struct ContentView: View {
                         onDismiss: {
                             withAnimation {
                                 self.position = previousPosition
-                                listDetent = .height(100)
+                                listDetent = Detent.small.presentationDetent
                             }
                         }
                     ) { selection in
@@ -88,9 +88,7 @@ struct ContentView: View {
                         )
                         .presentationDragIndicator(.visible)
                         .presentationBackgroundInteraction(.enabled)
-                        .presentationDetents(
-                            [.large, .fraction(0.33)], selection: $detailsDetent
-                        )
+                        .presentationDetents(Set(Detent.allCases.map(\.presentationDetent)), selection: $detailsDetent)
                         .environmentObject(notifyService)
                         .environmentObject(locationService)
                     }
@@ -124,7 +122,7 @@ struct ContentView: View {
         .listStyle(.plain)
         .background(.ultraThickMaterial)
         .presentationBackgroundInteraction(.enabled)
-        .presentationDetents([.large, .height(300), .height(100)], selection: $listDetent)
+        .presentationDetents(Set(Detent.allCases.map(\.presentationDetent)), selection: $listDetent)
         .interactiveDismissDisabled()
     }
 
@@ -141,7 +139,7 @@ struct ContentView: View {
         guard let coordinate = proxy.convert(position, from: space) else { return }
         selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
         withAnimation { self.position = .camera(MapCamera(MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0))) }
-        listDetent = .height(300)
+        listDetent = Detent.medium.presentationDetent
     }
 
     var mapControls: some View {
