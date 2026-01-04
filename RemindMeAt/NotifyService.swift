@@ -20,8 +20,10 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
                     else { return nil }
 
                     return NotificationEntity(
-                        id: request.id, title: request.content.title, center: region.center,
-                        notifyOnEntry: region.notifyOnEntry, notifyOnExit: region.notifyOnExit,
+                        id: request.id,
+                        title: request.content.title,
+                        center: region.center,
+                        notificationOnType: region.notifyOnEntry ? .arriving : .leaving,
                         radius: region.radius
                     )
                 }
@@ -48,24 +50,27 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
     }
 
     func notify(
-        near targetLocation: CLLocationCoordinate2D, about text: String, onEntry: Bool,
-        onExit: Bool, radius: Double = 100.0
+        near targetLocation: CLLocationCoordinate2D,
+        about text: String,
+        notificationOnType: NotificationOnType,
+        radius: Double
     ) {
         print("Adding notification \(text)")
         let content = UNMutableNotificationContent()
         content.title = text
         content.sound = UNNotificationSound.default
 
-        let region = CLCircularRegion(
-            center: targetLocation, radius: radius, identifier: UUID().uuidString
-        )
-        let trigger = UNLocationNotificationTrigger(region: region, repeats: false)
-        region.notifyOnEntry = onEntry
-        region.notifyOnExit = onExit
+        let region = CLCircularRegion(center: targetLocation, radius: radius, identifier: UUID().uuidString)
+        let trigger = UNLocationNotificationTrigger(region: region, repeats: true)
 
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString, content: content, trigger: trigger
-        )
+        switch notificationOnType {
+        case .arriving:
+            region.notifyOnEntry = true
+        case .leaving:
+            region.notifyOnExit = true
+        }
+
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
 
         notificationCenter.add(request)
     }

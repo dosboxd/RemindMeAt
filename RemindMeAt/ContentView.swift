@@ -1,6 +1,5 @@
 import MapKit
 import SwiftUI
-import UserNotifications
 
 struct ContentView: View {
     @StateObject private var locationService = LocationService()
@@ -13,10 +12,10 @@ struct ContentView: View {
     @State private var showingAll: Bool = false
     @AppStorage("satelliteEnabled", store: .standard) private var satelliteEnabled: Bool = false
 
-    @State private var listDetent = PresentationDetent.height(300)
-    @State private var detailsDetent = PresentationDetent.fraction(0.33)
+    @State private var listDetent = Detent.medium.presentationDetent
+    @State private var detailsDetent = Detent.medium.presentationDetent
     @State private var isPresentedDetailsView: Bool = false
-    @State var selection: NotificationEntity? {
+    @State var selection: NotificationArea? {
         didSet {
             isPresentedDetailsView = selection != nil
         }
@@ -28,9 +27,7 @@ struct ContentView: View {
                 Map(position: $position) {
                     UserAnnotation()
                     if let selection = Binding($selection) {
-                        Marker(coordinate: selection.center.wrappedValue) {
-                            Text(selection.title.wrappedValue)
-                        }
+                        Marker(coordinate: selection.center.wrappedValue) {}
                         MapCircle(center: selection.center.wrappedValue, radius: selection.radius.wrappedValue)
                             .foregroundStyle(Color.blue.opacity(0.2))
                             .stroke(.white, lineWidth: 2)
@@ -78,23 +75,32 @@ struct ContentView: View {
             .sheet(isPresented: $isPresentedListView) {
                 NavigationStack {
                     listBottomSheet
-                        .navigationTitle("Sheets")
+                        .navigationTitle("Notifications")
                         .toolbarTitleDisplayMode(.inlineLarge)
                         .sheet(
                             isPresented: $isPresentedDetailsView,
                             onDismiss: {
                                 withAnimation {
                                     position = previousPosition
-//                                    listDetent = Detent.small.presentationDetent
                                     selection = nil
                                 }
                             }
                         ) {
-                            CreateNotificationView()
+                            if let selection {
+                                CreateNotificationView(
+                                    dummy: Binding(
+                                        get: {
+                                            selection
+                                        }, set: {
+                                            self.selection = $0
+                                        }
+                                    )
+                                )
                                 .presentationDragIndicator(.visible)
                                 .presentationBackgroundInteraction(.enabled)
                                 .presentationDetents([Detent.medium.presentationDetent], selection: $detailsDetent)
                                 .environmentObject(notifyService)
+                            }
                         }
                 }
             }
@@ -103,28 +109,23 @@ struct ContentView: View {
 
     var listBottomSheet: some View {
         List {
-            Section("Notifications") {
-                if notifyService.pendingNotifications.isEmpty {
-                    Text("Tap on map to add a reminder")
-                } else {
-                    ForEach(notifyService.pendingNotifications) { notification in
-                        Button(notification.title) {
-                            selection = notification
-                            withAnimation { position = .item(MKMapItem(placemark: MKPlacemark(coordinate: notification.center))) }
-                        }
-                    }
-                    .onDelete { index in
-                        var copy = notifyService.pendingNotifications
-                        copy.remove(atOffsets: index)
-                        notifyService.replace(newPendingNotifications: copy)
-                        notifyService.pendingNotifications.remove(atOffsets: index)
-                    }
+            if notifyService.pendingNotifications.isEmpty {
+                Text("Tap on map to add a reminder")
+            } else {
+                ForEach(notifyService.pendingNotifications) { notification in
+                    Text(notification.title)
+                }
+                .onDelete { index in
+                    var copy = notifyService.pendingNotifications
+                    copy.remove(atOffsets: index)
+                    notifyService.replace(newPendingNotifications: copy)
+                    notifyService.pendingNotifications.remove(atOffsets: index)
                 }
             }
-            .headerProminence(.increased)
         }
         .listRowBackground(Color.clear)
-        .listStyle(.plain)
+        .contentMargins(.vertical, 8)
+        .listStyle(.automatic)
         .background(.ultraThickMaterial)
         .presentationBackgroundInteraction(.enabled)
         .presentationDetents(Set(Detent.allCases.map(\.presentationDetent)), selection: $listDetent)
@@ -133,7 +134,9 @@ struct ContentView: View {
 
     func mapCircle(name: String, center: CLLocationCoordinate2D, radius: CLLocationDistance) -> some MapContent {
         Group {
-            Marker(coordinate: center) { Text(name) }
+            Marker(coordinate: center) {
+                Text(name)
+            }
             MapCircle(center: center, radius: radius)
                 .foregroundStyle(Color.blue.opacity(0.2))
                 .stroke(.white, lineWidth: 2)
@@ -142,8 +145,12 @@ struct ContentView: View {
 
     func locate(position: CGPoint, proxy: MapProxy, space: CoordinateSpaceProtocol) {
         guard let coordinate = proxy.convert(position, from: space) else { return }
-        selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
-        withAnimation { self.position = .camera(MapCamera(MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0))) }
+        selection = NotificationArea(center: coordinate, radius: 50)
+        withAnimation {
+            self.position = .camera(
+                MapCamera(MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0))
+            )
+        }
         detailsDetent = Detent.medium.presentationDetent
     }
 

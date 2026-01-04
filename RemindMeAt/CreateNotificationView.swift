@@ -1,25 +1,28 @@
+import CoreLocation
 import SwiftUI
 
 struct CreateNotificationView: View {
-    @Environment(\.dismiss) var dismiss
-
     @EnvironmentObject var notifyService: NotifyService
-    @State var notification: NotificationEntity = .init(id: "", title: "", center: .init(), notifyOnEntry: true, notifyOnExit: false, radius: .zero)
-    @FocusState private var reminderFieldIsFocused: Bool
-    @State private var selectedNotificationOnType: NotificationOnType = .arriving
+    @Binding var dummy: NotificationArea
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var textFieldIsFocused: Bool
+
+    @State private var title: String = ""
+    @State private var notificationOnType: NotificationOnType = .arriving
 
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Title", text: $notification.title)
-                    .focused($reminderFieldIsFocused)
+                TextField("Title", text: $title)
+                    .focused($textFieldIsFocused)
                     .onSubmit(saveAndRemind)
                     .padding(8)
                 HStack {
-                    Slider(value: $notification.radius, in: 5 ... 100, step: 1)
-                    Text("\(Int(notification.radius)) m.")
+                    Slider(value: $dummy.radius, in: 5 ... 100, step: 1)
+                    Text("\(Int(dummy.radius)) m.")
                 }
-                Picker("Notify on", selection: $selectedNotificationOnType) {
+                Picker("Notify on", selection: $notificationOnType) {
                     ForEach(NotificationOnType.allCases) { theme in
                         Text(theme.rawValue.capitalized).tag(theme)
                     }
@@ -48,26 +51,24 @@ struct CreateNotificationView: View {
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                reminderFieldIsFocused = true
+                textFieldIsFocused = true
             }
         }
     }
 
     func saveAndRemind() {
         notifyService.notify(
-            near: notification.center, about: notification.title,
-            onEntry: notification.notifyOnEntry,
-            onExit: notification.notifyOnExit, radius: notification.radius
+            near: dummy.center,
+            about: title,
+            notificationOnType: notificationOnType,
+            radius: dummy.radius
         )
         notifyService.loadPendingNotifications()
         dismiss()
     }
 }
 
-#Preview {
-    @Previewable @State var notification = NotificationEntity(
-        id: "", title: "", center: .init(), notifyOnEntry: true, notifyOnExit: false, radius: 100
-    )
-    CreateNotificationView()
+ #Preview {
+     CreateNotificationView(dummy: .constant(NotificationArea(center: CLLocationCoordinate2D(), radius: .zero)))
         .environmentObject(NotifyService(notificationCenter: .current()))
-}
+ }
