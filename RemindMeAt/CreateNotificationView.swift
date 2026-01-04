@@ -12,8 +12,8 @@ struct CreateNotificationView: View {
     @FocusState private var reminderFieldIsFocused: Bool
 
     var body: some View {
-        Form {
-            Section("Details") {
+        NavigationStack {
+            Form {
                 HStack {
                     Text("Name: ")
                     TextField("Reminder name", text: $notification.title)
@@ -35,35 +35,52 @@ struct CreateNotificationView: View {
                         Text("100 m.")
                     }
                 }
-            }
-            Section("Notify on") {
-                Toggle(isOn: $notification.notifyOnEntry) {
-                    Text("On Entry")
+                Section("Notify on") {
+                    Toggle(isOn: $notification.notifyOnEntry) {
+                        Text("On Entry")
+                    }
+                    Toggle(isOn: $notification.notifyOnExit) {
+                        Text("On Exit")
+                    }
                 }
-                Toggle(isOn: $notification.notifyOnExit) {
-                    Text("On Exit")
+                Button("Save and remind") {
+                    saveAndRemind(notification)
+                }
+                Button(role: .destructive) {
+                    dismiss.callAsFunction()
+                } label: {
+                    Text("Cancel")
+                }
+                .listRowSeparator(.hidden)
+            }
+            .selectionDisabled()
+            .listStyle(.automatic)
+            .backgroundStyle(.ultraThickMaterial)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", systemImage: "xmark") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .title) {
+                    Text("New Reminder")
+                        .fontWeight(.bold)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save", systemImage: "checkmark") {
+                        print("saving")
+                        dismiss()
+                    }
                 }
             }
-            Button("Save and remind") {
-                saveAndRemind(notification)
-            }
-            Button(role: .destructive) {
-                dismiss.callAsFunction()
-            } label: {
-                Text("Cancel")
-            }
-            .listRowSeparator(.hidden)
-        }
-        .selectionDisabled()
-        .listStyle(.automatic)
-        .backgroundStyle(.ultraThickMaterial)
-        .task(id: notification.center) {
-            do {
-                notification.title =
-                    try await locationService.lookUpPlacemark(location: notification.center).first
-                        ?? ""
-            } catch {
-                print("Could not get a name for location with error: \(error)")
+            .task(id: notification.center) {
+                do {
+                    notification.title =
+                        try await locationService.lookUpPlacemark(location: notification.center).first
+                            ?? ""
+                } catch {
+                    print("Could not get a name for location with error: \(error)")
+                }
             }
         }
     }

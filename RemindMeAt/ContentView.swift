@@ -24,7 +24,9 @@ struct ContentView: View {
                 Map(position: $position) {
                     UserAnnotation()
                     if let selection = Binding($selection) {
-                        Marker(coordinate: selection.center.wrappedValue) { Text(selection.title.wrappedValue) }
+                        Marker(coordinate: selection.center.wrappedValue) {
+                            Text(selection.title.wrappedValue)
+                        }
                         MapCircle(center: selection.center.wrappedValue, radius: selection.radius.wrappedValue)
                             .foregroundStyle(Color.blue.opacity(0.2))
                             .stroke(.white, lineWidth: 2)
@@ -70,28 +72,32 @@ struct ContentView: View {
                 notifyService.loadPendingNotifications()
             }
             .sheet(isPresented: $isPresentedListView) {
-                listBottomSheet
-                    .sheet(
-                        item: $selection,
-                        onDismiss: {
-                            withAnimation {
-                                self.position = previousPosition
-                                listDetent = Detent.small.presentationDetent
+                NavigationStack {
+                    listBottomSheet
+                        .navigationTitle("Sheets")
+                        .toolbarTitleDisplayMode(.inlineLarge)
+                        .sheet(
+                            item: $selection,
+                            onDismiss: {
+                                withAnimation {
+                                    self.position = previousPosition
+                                    listDetent = Detent.small.presentationDetent
+                                }
                             }
-                        }
-                    ) { selection in
-                        CreateNotificationView(
-                            notification: Binding(
-                                get: { selection },
-                                set: { self.selection = $0 }
+                        ) { selection in
+                            CreateNotificationView(
+                                notification: Binding(
+                                    get: { selection },
+                                    set: { self.selection = $0 }
+                                )
                             )
-                        )
-                        .presentationDragIndicator(.visible)
-                        .presentationBackgroundInteraction(.enabled)
-                        .presentationDetents(Set(Detent.allCases.map(\.presentationDetent)), selection: $detailsDetent)
-                        .environmentObject(notifyService)
-                        .environmentObject(locationService)
-                    }
+                            .presentationDragIndicator(.visible)
+                            .presentationBackgroundInteraction(.enabled)
+                            .presentationDetents(Set(Detent.allCases.map(\.presentationDetent)), selection: $detailsDetent)
+                            .environmentObject(notifyService)
+                            .environmentObject(locationService)
+                        }
+                }
             }
         }
     }
@@ -139,7 +145,7 @@ struct ContentView: View {
         guard let coordinate = proxy.convert(position, from: space) else { return }
         selection = NotificationEntity(id: "", title: "", center: coordinate, notifyOnEntry: true, notifyOnExit: false, radius: 50)
         withAnimation { self.position = .camera(MapCamera(MKMapCamera(lookingAtCenter: coordinate, fromDistance: 1000, pitch: 0, heading: 0))) }
-        listDetent = Detent.medium.presentationDetent
+        detailsDetent = Detent.medium.presentationDetent
     }
 
     var mapControls: some View {
