@@ -15,8 +15,12 @@ struct ContentView: View {
 
     @State private var listDetent = PresentationDetent.height(300)
     @State private var detailsDetent = PresentationDetent.fraction(0.33)
-
-    @State var selection: NotificationEntity?
+    @State private var isPresentedDetailsView: Bool = false
+    @State var selection: NotificationEntity? {
+        didSet {
+            isPresentedDetailsView = selection != nil
+        }
+    }
 
     var body: some View {
         MapReader { proxy in
@@ -77,25 +81,20 @@ struct ContentView: View {
                         .navigationTitle("Sheets")
                         .toolbarTitleDisplayMode(.inlineLarge)
                         .sheet(
-                            item: $selection,
+                            isPresented: $isPresentedDetailsView,
                             onDismiss: {
                                 withAnimation {
-                                    self.position = previousPosition
-                                    listDetent = Detent.small.presentationDetent
+                                    position = previousPosition
+//                                    listDetent = Detent.small.presentationDetent
+                                    selection = nil
                                 }
                             }
-                        ) { selection in
-                            CreateNotificationView(
-                                notification: Binding(
-                                    get: { selection },
-                                    set: { self.selection = $0 }
-                                )
-                            )
-                            .presentationDragIndicator(.visible)
-                            .presentationBackgroundInteraction(.enabled)
-                            .presentationDetents(Set(Detent.allCases.map(\.presentationDetent)), selection: $detailsDetent)
-                            .environmentObject(notifyService)
-                            .environmentObject(locationService)
+                        ) {
+                            CreateNotificationView()
+                                .presentationDragIndicator(.visible)
+                                .presentationBackgroundInteraction(.enabled)
+                                .presentationDetents([Detent.medium.presentationDetent], selection: $detailsDetent)
+                                .environmentObject(notifyService)
                         }
                 }
             }

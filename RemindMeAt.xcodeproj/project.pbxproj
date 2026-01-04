@@ -25,11 +25,11 @@
 
 /* Begin PBXFileReference section */
 		63BCC7E72DB789DA00B41A56 /* RemindMeAt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RemindMeAt.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E25C8830A8A702BA924C8727 /* Detent.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = Detent.swift; path = Detent.swift; sourceTree = "<group>"; };
+		E25C8830A8A702BA924C8727 /* Detent.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Detent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		63BCC7F62DB797A800B41A56 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		63BCC7F62DB797A800B41A56 /* Exceptions for "RemindMeAt" folder in "RemindMeAt" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -42,7 +42,7 @@
 		63BCC7E92DB789DA00B41A56 /* RemindMeAt */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				63BCC7F62DB797A800B41A56 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				63BCC7F62DB797A800B41A56 /* Exceptions for "RemindMeAt" folder in "RemindMeAt" target */,
 			);
 			path = RemindMeAt;
 			sourceTree = "<group>";
@@ -82,7 +82,6 @@
 			children = (
 				E25C8830A8A702BA924C8727 /* Detent.swift */,
 			);
-			name = RemindMeAt;
 			path = RemindMeAt;
 			sourceTree = "<group>";
 		};
