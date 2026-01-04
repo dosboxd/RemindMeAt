@@ -1,5 +1,12 @@
 import SwiftUI
 
+enum NotificationType: String, CaseIterable, Identifiable {
+    var id: RawValue { rawValue }
+
+case arriving
+    case leaving
+}
+
 struct CreateNotificationView: View {
     @Environment(\.dismiss) var dismiss
 
@@ -10,23 +17,17 @@ struct CreateNotificationView: View {
 
     @State private var shouldSelectOnEntryOrOnExitBehavior = false
     @FocusState private var reminderFieldIsFocused: Bool
+    @State private var selectedNotificationType: NotificationType = .arriving
 
     var body: some View {
         NavigationStack {
             Form {
-                HStack {
-                    Text("Name: ")
-                    TextField("Reminder name", text: $notification.title)
-                        .focused($reminderFieldIsFocused)
-                        .onSubmit {
-                            saveAndRemind(notification)
-                        }
-                        .padding(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(.secondary, lineWidth: 1)
-                        )
-                }
+                TextField("Title", text: $notification.title) // suggestion
+                    .focused($reminderFieldIsFocused)
+                    .onSubmit {
+                        saveAndRemind(notification)
+                    }
+                    .padding(8)
                 VStack(alignment: .leading) {
                     Text("Radius: \(Int(notification.radius)) meters")
                     HStack {
@@ -35,27 +36,19 @@ struct CreateNotificationView: View {
                         Text("100 m.")
                     }
                 }
-                Section("Notify on") {
-                    Toggle(isOn: $notification.notifyOnEntry) {
-                        Text("On Entry")
-                    }
-                    Toggle(isOn: $notification.notifyOnExit) {
-                        Text("On Exit")
+                Picker("Notify on", selection: $selectedNotificationType) {
+                    ForEach(NotificationType.allCases) { theme in
+                        Text(theme.rawValue.capitalized).tag(theme)
                     }
                 }
-                Button("Save and remind") {
-                    saveAndRemind(notification)
-                }
-                Button(role: .destructive) {
-                    dismiss.callAsFunction()
-                } label: {
-                    Text("Cancel")
-                }
-                .listRowSeparator(.hidden)
+                .pickerStyle(.palette)
+                .labelsHidden()
             }
             .selectionDisabled()
             .listStyle(.automatic)
+            .contentMargins(.vertical, 0)
             .backgroundStyle(.ultraThickMaterial)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", systemImage: "xmark") {
