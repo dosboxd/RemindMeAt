@@ -1,8 +1,10 @@
 import CoreLocation
 import MapKit
 
+@MainActor
 final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     @Published var pendingNotifications: [NotificationEntity] = []
+    @Published var alertedNotification: NotificationEntity?
     private let notificationCenter: UNUserNotificationCenter
 
     init(notificationCenter: UNUserNotificationCenter) {
@@ -36,6 +38,10 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         let diff = set1.symmetricDifference(set2)
         let identifiers = Array(diff).map { $0.id }
         notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)
+    }
+
+    func removePendingNotification(by id: String) {
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [id])
     }
 
     func requestAuthorization() async {
@@ -75,10 +81,9 @@ final class NotifyService: NSObject, ObservableObject, UNUserNotificationCenterD
         notificationCenter.add(request)
     }
 
-    func userNotificationCenter(
-        _: UNUserNotificationCenter, didReceive _: UNNotificationResponse
-    ) async {
+    func userNotificationCenter(_: UNUserNotificationCenter, didReceive notification: UNNotificationResponse) async {
         print("Received Notification")
+        alertedNotification = pendingNotifications.first(where: { $0.id == notification.notification.request.id })
     }
 
     func userNotificationCenter(

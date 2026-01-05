@@ -15,9 +15,15 @@ struct ContentView: View {
     @State private var listDetent = Detent.medium.presentationDetent
     @State private var detailsDetent = Detent.medium.presentationDetent
     @State private var isPresentedDetailsView: Bool = false
+    @State private var isPresentedAlert: Bool = false
     @State var selection: NotificationArea? {
         didSet {
             isPresentedDetailsView = selection != nil
+        }
+    }
+    @State private var alertedNotification: NotificationEntity? {
+        didSet {
+            isPresentedAlert = alertedNotification != nil
         }
     }
 
@@ -67,6 +73,9 @@ struct ContentView: View {
                     selection = nil
                 }
             }
+            .onChange(of: notifyService.alertedNotification, { oldValue, newValue in
+                self.alertedNotification = newValue
+            })
             .task {
                 locationService.requestAuthorization()
                 await notifyService.requestAuthorization()
@@ -104,6 +113,23 @@ struct ContentView: View {
                         }
                 }
             }
+            .alert("You asked me to notify you about", isPresented: $isPresentedAlert, actions: {
+                Button("Keep") {}
+                Button("Complete or remove") {
+                    print("Procedding to complete or remove")
+                    if let id = alertedNotification?.id {
+                        notifyService.pendingNotifications.removeAll(where: { $0.id == id })
+                        notifyService.removePendingNotification(by: id)
+                    }
+
+                    alertedNotification = nil
+                    isPresentedAlert = false
+                }
+            }, message: {
+                if let alertedNotification {
+                    Text(alertedNotification.title)
+                }
+            })
         }
     }
 
